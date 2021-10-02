@@ -1,8 +1,8 @@
 use super::{Position, State};
 use bumpalo::{collections::Vec as BumpVec, Bump};
 use float_ord::FloatOrd;
-use glam::{DVec2};
-use hecs::{Entity};
+use glam::DVec2;
+use hecs::Entity;
 
 #[derive(Debug, Clone, Copy)]
 struct Element {
@@ -18,24 +18,27 @@ impl<'a> Field<'a> {
     fn new(bump: &'a Bump) -> Self {
         Self {
             mean: None,
-            elements: BumpVec::new_in(bump)
+            elements: BumpVec::new_in(bump),
         }
     }
     fn with_capacity_in(capacity: usize, bump: &'a Bump) -> Self {
         Self {
             mean: None,
-            elements: BumpVec::with_capacity_in(capacity, bump)
+            elements: BumpVec::with_capacity_in(capacity, bump),
         }
     }
-    fn extend(&mut self, iter: impl Iterator<Item=Element>) {
+    fn extend(&mut self, iter: impl Iterator<Item = Element>) {
         self.elements.extend(iter);
         self.mean = None;
     }
     fn get_mean_or_compute(&mut self) -> DVec2 {
-        let Self{ref mut mean, ref elements} = self;
+        let Self {
+            ref mut mean,
+            ref elements,
+        } = self;
         *mean.get_or_insert_with(|| Self::compute_mean(elements))
     }
-    fn compute_mean (vec: &BumpVec<'a, Element>) -> DVec2 {
+    fn compute_mean(vec: &BumpVec<'a, Element>) -> DVec2 {
         let sum: DVec2 = vec.iter().map(|e| &e.pos.vec).sum();
         sum / vec.len() as f64
     }
@@ -59,12 +62,32 @@ impl<'a> Field<'a> {
         new
     }
 
-    fn rect (self) -> Rect<'a> {
-        let min_x = self.elements.iter().map(|e| FloatOrd(e.pos.vec.x)).min().unwrap();
-        let max_x = self.elements.iter().map(|e| FloatOrd(e.pos.vec.x)).max().unwrap();
-        let min_y = self.elements.iter().map(|e| FloatOrd(e.pos.vec.y)).min().unwrap();
-        let max_y = self.elements.iter().map(|e| FloatOrd(e.pos.vec.y)).max().unwrap();
-        Rect{
+    fn rect(self) -> Rect<'a> {
+        let min_x = self
+            .elements
+            .iter()
+            .map(|e| FloatOrd(e.pos.vec.x))
+            .min()
+            .unwrap();
+        let max_x = self
+            .elements
+            .iter()
+            .map(|e| FloatOrd(e.pos.vec.x))
+            .max()
+            .unwrap();
+        let min_y = self
+            .elements
+            .iter()
+            .map(|e| FloatOrd(e.pos.vec.y))
+            .min()
+            .unwrap();
+        let max_y = self
+            .elements
+            .iter()
+            .map(|e| FloatOrd(e.pos.vec.y))
+            .max()
+            .unwrap();
+        Rect {
             min: DVec2::new(min_x.0, min_y.0),
             max: DVec2::new(max_x.0, max_y.0),
             elements: self.elements,
@@ -77,14 +100,19 @@ struct Partition<'a> {
     bump: &'a Bump,
 }
 impl<'a> Partition<'a> {
-    fn from_iter_in(iter: impl Iterator<Item=Element>, bump: &'a Bump) -> Self {
-        let mut fields = BumpVec::new_in( &bump);
+    fn from_iter_in(iter: impl Iterator<Item = Element>, bump: &'a Bump) -> Self {
+        let mut fields = BumpVec::new_in(&bump);
         let mut field = Field::new(bump);
         field.extend(iter);
         fields.push(field);
-        Self{fields, bump}
+        Self { fields, bump }
     }
-    fn partition_all_once<'b: 'a>(&mut self, bump: &'b Bump, partitioned: &mut BumpVec<'a, Field<'a>>, max_elements: usize) -> bool {
+    fn partition_all_once<'b: 'a>(
+        &mut self,
+        bump: &'b Bump,
+        partitioned: &mut BumpVec<'a, Field<'a>>,
+        max_elements: usize,
+    ) -> bool {
         let done = self.fields.iter_mut().any(|field| {
             if field.elements.len() > max_elements {
                 let mean = field.get_mean_or_compute();
@@ -116,7 +144,7 @@ impl<'a> Partition<'a> {
         while self.partition_all_once(&self.bump, &mut partitioned, max_elements) {}
         let mut rects = BumpVec::with_capacity_in(self.fields.len(), &self.bump);
         rects.extend(self.fields.drain(..).map(|field| field.rect()));
-        Space{rects}
+        Space { rects }
     }
 }
 
@@ -131,12 +159,17 @@ impl<'a> Rect<'a> {
         let y = pos.vec.y.clamp(self.min.y, self.max.y);
         DVec2::new(x, y).distance(pos.vec)
     }
-    fn neighbours(&'a self, pos: Position, dist: f64) -> impl 'a + Iterator<Item=Neighbour> {
-        self.elements.iter()
+    fn neighbours(&'a self, pos: Position, dist: f64) -> impl 'a + Iterator<Item = Neighbour> {
+        self.elements
+            .iter()
             .map(move |el| {
                 let diff = el.pos.vec - pos.vec;
                 let dist = diff.length();
-                Neighbour{entity: el.entity, diff, dist}
+                Neighbour {
+                    entity: el.entity,
+                    diff,
+                    dist,
+                }
             })
             .filter(move |neighbour| neighbour.dist <= dist)
     }
@@ -146,12 +179,11 @@ struct Space<'a> {
     rects: BumpVec<'a, Rect<'a>>,
 }
 impl<'a> Space<'a> {
-    fn neighbours(&'a self, pos: Position, dist: f64) -> impl 'a + Iterator<Item=Neighbour>{
-        self.rects.iter()
+    fn neighbours(&'a self, pos: Position, dist: f64) -> impl 'a + Iterator<Item = Neighbour> {
+        self.rects
+            .iter()
             .filter(move |rect| rect.distance(pos) <= dist)
-            .flat_map(move |rect| {
-                rect.neighbours(pos, dist)
-            })
+            .flat_map(move |rect| rect.neighbours(pos, dist))
     }
 }
 
@@ -185,5 +217,5 @@ impl Neighbours {
             }
         }
         state.bump.reset();
-    }    
+    }
 }
