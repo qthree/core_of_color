@@ -186,7 +186,7 @@ impl State {
         decelerate(self);
         Neighbours::update(self, 10.0);
         attract(self);
-        std::thread::sleep(Duration::from_micros(1000/60));
+        //std::thread::sleep(Duration::from_micros(1000/60));
     }
 
     pub fn player_input(&self, player: Entity, dir: DVec2) -> Option<()>{

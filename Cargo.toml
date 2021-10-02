@@ -1,5 +1,5 @@
 [package]
-name = "core-of-color"
+name = "core_of_color"
 version = "0.1.0"
 edition = "2018"
 
@@ -11,7 +11,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 hecs = "0.6"
 glam = "0.18"
-rand = "0.8"
+rand = { version = "0.8" }
+getrandom = { version = "0.2", features = ["js"] }
 colorsys = "0.6"
 bumpalo = { version = "3.7", features = ["collections", "boxed"] }
 float-ord = "0.3"
@@ -22,4 +23,5 @@ eframe = { version = "0.14", features = ["time"] }
 
 [features]
 default = []
+
 # persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
