@@ -121,7 +121,7 @@ impl epi::App for App {
                         let pos = dot.pos.vec * scale + transition;
                         let center = egui::pos2(pos.x as f32, pos.y as f32);
                         let color = Color32::from(&dot.color);
-                        egui::Shape::circle_filled(center, 3.0, color)
+                        egui::Shape::circle_filled(center, dot.size * 3.0, color)
                     })
                     .collect();
                 ui.painter().extend(shapes);
