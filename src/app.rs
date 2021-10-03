@@ -62,7 +62,7 @@ impl App {
 
 impl epi::App for App {
     fn name(&self) -> &str {
-        "Red-Green-Blue"
+        "Core of Color"
     }
 
     fn update(&mut self, ctx: &egui::CtxRef, _frame: &mut epi::Frame<'_>) {
