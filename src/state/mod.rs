@@ -104,7 +104,7 @@ impl Player {
                 if let Some(color) = query.without::<IsPlayer>().without::<Player>().get() {
                     let sat = color.hsl.saturation();
                     if sat > 0.0 {
-                        let sat = (sat - 0.01 * rate * rate).max(0.0);
+                        let sat = (sat - 0.03 * rate * rate).max(0.0);
                         color.hsl.set_saturation(sat);
                         energy += 0.0003 * rate;
                     }
