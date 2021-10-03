@@ -10,7 +10,8 @@ This game is made for `Ludum Dare 49 - Unstable` game jam.
 * As core grows you'll get more orbiting dots with another colors.
 * Relax and have fun.
 ## Controls
-Arrow keys or WASD.
+* Arrow keys or WASD.
+* Pointer (v1.1+. mostly for mobile web version)
 ## How to play
 * [Play web version](https://qthree.github.io/core_of_color/)
 * [Download Windows version from Releases](https://github.com/qthree/core_of_color/releases)
