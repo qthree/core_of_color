@@ -11,4 +11,5 @@ This game is made for `Ludum Dare 49 - Unstable` game jam.
 Arrow keys or WASD.
 ## How to play
 * [Play web version](https://qthree.github.io/core_of_color/)
-* Install Rust, clone this repo, `cargo run --release`
+* [Download Windows version from Releases](https://github.com/qthree/core_of_color/releases)
+* [Install Rust](https://rustup.rs/), clone this repo, `cargo run --release`
