@@ -89,7 +89,7 @@ impl Player {
     fn consume_around_dot(&self, world: &World, dot: Entity, dist: f64) -> Option<f64> {
         let neighbours = world.get::<Neighbours>(dot).ok()?;
         let energy_size = self.energy_size();
-        let rate = if Player::is_blackhole(energy_size) { 
+        let rate = if Player::is_blackhole(energy_size) {
             energy_size
         } else {
             1.0
@@ -116,7 +116,9 @@ impl Player {
     fn consume_energy(state: &mut State) {
         for (_entity, (player,)) in state.world.query::<(&mut Player,)>().iter() {
             for dot in &player.dots {
-                player.energy += player.consume_around_dot(&state.world, *dot, 0.2).unwrap_or(0.0);
+                player.energy += player
+                    .consume_around_dot(&state.world, *dot, 0.2)
+                    .unwrap_or(0.0);
             }
         }
     }
@@ -167,7 +169,11 @@ impl Player {
     }
     fn grow(state: &mut State) {
         let mut add_dots = vec![];
-        for (entity, (player, size, color)) in state.world.query::<(&mut Player, &mut Size, &mut Color)>().iter() {
+        for (entity, (player, size, color)) in state
+            .world
+            .query::<(&mut Player, &mut Size, &mut Color)>()
+            .iter()
+        {
             let new_size = player.energy_size();
             if Player::is_blackhole(new_size) {
                 size.0 = (size.0 - 0.1).max(0.01);
@@ -221,6 +227,13 @@ impl Random {
     }
 }
 
+fn global_gravity(state: &mut State) {
+    for (_, (pos, speed)) in state.world.query_mut::<(&Position, &mut Speed)>() {
+        let dist = pos.vec.length();
+        speed.vec -= pos.vec.normalize_or_zero() * (dist * 0.001).powf(2.0);
+    }
+}
+
 fn position_speed(state: &mut State) {
     for (_, (pos, speed)) in state.world.query_mut::<(&mut Position, &Speed)>() {
         pos.vec += speed.vec;
@@ -263,7 +276,7 @@ fn neighbour_attraction(color: &Color, world: &World, other: &Neighbour) -> Opti
     let dist = other.dist * other.dist * other.dist;
     let dist = 1.0 / dist;
 
-    Some(normal * 0.01 * (dist * (power * force) + sunction*0.3))
+    Some(normal * 0.01 * (dist * (power * force) + sunction * 0.3))
 }
 
 fn attract(state: &mut State) {
@@ -290,12 +303,12 @@ fn heat_death(state: &mut State) {
         .without::<Player>()
         .without::<IsPlayer>()
         .iter()
-        .map(|(entity, (color,))|
-    {
-        if color.hsl.saturation() <= 0.1 {
-            despawn.push(entity);
-        }
-    }).count();
+        .map(|(entity, (color,))| {
+            if color.hsl.saturation() <= 0.1 {
+                despawn.push(entity);
+            }
+        })
+        .count();
     for entity in despawn {
         let _ = state.world.despawn(entity);
     }
@@ -330,11 +343,12 @@ impl State {
     pub fn tick(&mut self) {
         self.bump.reset();
         heat_death(self);
+        global_gravity(self);
+        position_speed(self);
         Player::rotate(self);
         Player::consume_energy(self);
         Player::grow(self);
         Player::update(self);
-        position_speed(self);
         decelerate(self);
         let count = self.world.query::<&Neighbours>().iter().count() as f64;
         Neighbours::update(self, (10000.0 / count).clamp(10.0, 10000.0));
@@ -353,8 +367,10 @@ impl State {
         Some(())
     }
     pub fn position(&self, entity: Entity) -> Option<Position> {
-        let mut query = self.world.query_one::<&Position>(entity).ok()?;
-        query.get().copied()
+        self.world.get::<Position>(entity).ok().as_deref().copied()
+    }
+    pub fn size(&self, entity: Entity) -> Option<Size> {
+        self.world.get::<Size>(entity).ok().as_deref().copied()
     }
 
     pub fn batch_spawn_dots(&mut self, n: usize) {
@@ -365,7 +381,7 @@ impl State {
                 vec: random.dvec2(10.0),
             };
             let speed = Speed {
-                vec: random.dvec2(0.001),
+                vec: pos.vec,
             };
             let color = random.color();
             let neighbours = Neighbours::default();
@@ -391,7 +407,7 @@ impl State {
 
     pub fn spawn_player(&mut self) -> Entity {
         let player = self.world.reserve_entity();
-        self.respawn_player(player);        
+        self.respawn_player(player);
         player
     }
 
