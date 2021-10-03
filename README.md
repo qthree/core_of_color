@@ -1,5 +1,7 @@
 # Core of Color
 This game is made for `Ludum Dare 49 - Unstable` game jam.
+## Screenshot
+![Screenshot](screenshot.png)
 ## Goals of the game
 * Grow you core.
 * To do this use your orbiting dots to catch free dots of the same color.
