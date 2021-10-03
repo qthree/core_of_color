@@ -23,6 +23,15 @@ impl App {
         use egui::Key;
         let input = ctx.input();
 
+        if input.pointer.any_down() {
+            if let Some(pos) = input.pointer.interact_pos() {
+                let rect = ctx.available_rect();
+                let x = pos.x - rect.width() / 2.0;
+                let y = pos.y - rect.height() / 2.0;
+                return DVec2::new(x as f64, -y as f64).normalize_or_zero();
+            }
+        }
+
         let left = input.key_down(Key::A) || input.key_down(Key::ArrowLeft);
         let right = input.key_down(Key::D) || input.key_down(Key::ArrowRight);
         let up = input.key_down(Key::W) || input.key_down(Key::ArrowUp);
