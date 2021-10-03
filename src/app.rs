@@ -1,4 +1,4 @@
-use crate::state;
+use crate::state::{self, Color};
 use eframe::{
     egui::{self, Color32, Frame},
     epi,
@@ -104,7 +104,12 @@ impl epi::App for App {
                 shapes.extend(dots.iter().map(|dot| {
                     let center = transform(dot.pos.vec);
                     let color = Color32::from(&dot.color);
-                    egui::Shape::circle_filled(center, dot.size * 3.0, color)
+                    let radius = dot.size * 3.0;
+                    if dot.hollow {
+                        egui::Shape::Circle{center, radius, fill: Color32::BLACK, stroke: (0.5, color).into()}
+                    } else {
+                        egui::Shape::circle_filled(center, radius, color)
+                    }
                 }));
                 ui.painter().extend(shapes);
             });

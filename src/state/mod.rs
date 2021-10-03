@@ -412,11 +412,12 @@ impl State {
     }
 
     pub fn dots(&self) -> BumpVec<'_, Dot> {
-        let mut query = self.world.query::<(&Color, &Position, Option<&Size>)>();
-        let iter = query.iter().map(|(_, (color, &pos, size))| Dot {
+        let mut query = self.world.query::<(&Color, &Position, Option<&Size>, Option<&IsPlayer>, Option<&Player>)>();
+        let iter = query.iter().map(|(_, (color, &pos, size, is_player, player))| Dot {
             color: color.clone(),
             pos,
             size: size.unwrap_or(&Size(1.0)).0.powf(0.5) as f32,
+            hollow: is_player.is_some() || player.is_some(),
         });
         BumpVec::from_iter_in(iter, &self.bump)
     }
@@ -427,4 +428,5 @@ pub struct Dot {
     pub color: Color,
     pub pos: Position,
     pub size: f32,
+    pub hollow: bool,
 }
