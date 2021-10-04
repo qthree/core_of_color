@@ -1,5 +1,5 @@
 # Core of Color
-This game is made for `Ludum Dare 49 - Unstable` game jam.
+This game is made for [Ludum Dare 49 - Unstable](https://ldjam.com/events/ludum-dare/49/core-of-color) game jam.
 ## Screenshot
 ![Screenshot](screenshot.png)
 ## Goals of the game
